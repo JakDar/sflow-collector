@@ -3,4 +3,6 @@ name = "sflow-collector"
 version = "0.1.0"
 authors = ["Andreas Rammhold <andreas@rammhold.de>"]
 
-
+[dependencies]
+sflow = { git = "https://github.com/andir/rust-sflow" }
+prometheus = "0.2"
