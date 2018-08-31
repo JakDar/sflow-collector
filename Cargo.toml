@@ -4,5 +4,5 @@ version = "0.1.0"
 authors = ["Andreas Rammhold <andreas@rammhold.de>"]
 
 [dependencies]
-sflow = { git = "https://github.com/andir/rust-sflow" }
-prometheus = "0.2"
+sflow = {path="../rust-sflow"}
+#//{ git = "https://github.com/JakDar/rust-sflow", branch = "feature/add-sampled-header-contents"}
