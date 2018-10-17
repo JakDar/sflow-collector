@@ -1,9 +1,23 @@
 extern crate sflow;
+extern crate serde;
+extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
 
+mod model {
+    pub mod l3;
+    pub mod l4;
+    pub mod l7;
+    pub mod mega_packet;
+}
+
+use model::mega_packet::PacketJson;
 use std::net::UdpSocket;
 use std::io::BufReader;
 use std::io::Cursor;
 use sflow::Decodeable;
+use serde_json::Error;
+use sflow::flow_records::SampledHeader;
 
 
 fn print_flow_record(record: &sflow::FlowRecord) {
@@ -15,7 +29,20 @@ fn print_flow_record(record: &sflow::FlowRecord) {
     }
 }
 
+fn get_sampled_header(record: &sflow::FlowRecord) -> Option<&SampledHeader> {
+    use sflow::FlowRecord::*;
+    match record {
+        SampledHeader(sample) => Some(sample),
+        _ => None
+    }
+}
+
+
 fn main() {
+//    let json = serde_json::to_string(&x).unwrap();
+
+
+
     let mut stream = UdpSocket::bind("0.0.0.0:6343").unwrap();
 
     let mut buffer = [0u8; 1500];
@@ -47,7 +74,12 @@ fn main() {
         };
         for sample in &dgram.sample_record {
             match sample {
-                sflow::SampleRecord::FlowSample(flow) => flow.flow_records.iter().for_each(|record| print_flow_record(record)),
+                sflow::SampleRecord::FlowSample(flow) => flow.flow_records.iter()
+                    .map(|record| get_sampled_header(record))
+                    .filter(|header| header.is_some())
+                    .map(|header| PacketJson::from_sampled_header(header.unwrap()))
+                    .map(|x| serde_json::to_string(&x))
+                    .for_each(|s| println!("{}", s.unwrap())),
                 _ => ()
             }
         }
