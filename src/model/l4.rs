@@ -2,7 +2,7 @@ use sflow::header_record::layer4::l4::Layer4Packet;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct L4Json {
-    pub l4Type: L4JsonType,
+    pub l4_type: L4JsonType,
     pub icmp_type: Option<u8>,
     pub icmp_code: Option<u8>,
     pub src_port: Option<u16>,
@@ -28,7 +28,7 @@ impl L4Json {
         match packet {
             Layer4Packet::Icmp(icmp) =>
                 L4Json {
-                    l4Type: L4JsonType::Icmp,
+                    l4_type: L4JsonType::Icmp,
                     icmp_type: Some(icmp.icmp_type),
                     icmp_code: Some(icmp.icmp_code),
                     src_port: None,
@@ -40,7 +40,7 @@ impl L4Json {
                     window_size: None,
                 },
             Layer4Packet::TCP(tcp) => L4Json {
-                l4Type: L4JsonType::Tcp,
+                l4_type: L4JsonType::Tcp,
                 icmp_type: None,
                 icmp_code: None,
                 src_port: Some(tcp.src_port),
@@ -52,7 +52,7 @@ impl L4Json {
                 window_size: Some(tcp.window_size),
             },
             Layer4Packet::UDP() => L4Json {
-                l4Type: L4JsonType::Udp, //todo - add udp
+                l4_type: L4JsonType::Udp, //todo - add udp
                 icmp_type: None,
                 icmp_code: None,
                 src_port: None,
@@ -64,7 +64,7 @@ impl L4Json {
                 window_size: None,
             },
             Layer4Packet::Unknown => L4Json {
-                l4Type: L4JsonType::Icmp,
+                l4_type: L4JsonType::Icmp,
                 icmp_type: None,
                 icmp_code: None,
                 src_port: None,
