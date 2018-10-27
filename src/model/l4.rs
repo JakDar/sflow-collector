@@ -64,7 +64,7 @@ impl L4Json {
                 window_size: None,
             },
             Layer4Packet::Unknown => L4Json {
-                l4_type: L4JsonType::Icmp,
+                l4_type: L4JsonType::Unknown,
                 icmp_type: None,
                 icmp_code: None,
                 src_port: None,
