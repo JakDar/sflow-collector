@@ -86,7 +86,7 @@ fn read_incoming_packets(channel: Sender<String>, addr: &str) {
 
         for sample in &dgram.sample_record {
             match sample {
-                sflow::SampleRecord::FlowSample(flow) => flow.flow_records.iter()
+                sflow::SampleRecord::FlowSample(flow) => flow.flow_records.iter() //todo:bcm - sampling rate is here
                     .map(|record| get_sampled_header(record))
                     .filter(|header| header.is_some())
                     .map(|header| PacketJson::from_sampled_header(header.unwrap()))
