@@ -16,7 +16,7 @@ pub struct PacketJson {
 }
 
 impl PacketJson {
-    pub fn from_sampled_header(header: &SampledHeader) -> Self {
+    pub fn from_sampled_header(header: &SampledHeader, sampling_rate: u32) -> Self {
         let ipv4 = &header.packet.packet;
         let ipv4json = L3Json::l3_from_packet(&ipv4);
 
@@ -29,11 +29,10 @@ impl PacketJson {
         };
         let l7json = l7.map(|packet| L7Json::from_l7_packet(&packet));
 
-        //todo:bcm extract
-        let duration = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap(); //todo:bcm
+        let duration = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
         let in_ms = duration.as_secs() * 1000 +
             duration.subsec_nanos() as u64 / 1_000_000;
 
-        PacketJson { l3: ipv4json, l4: l4json, l7: l7json, sampling_rate: 3, packet_size: 60, timestamp: in_ms }//todo:bcm - add real values
+        PacketJson { l3: ipv4json, l4: l4json, l7: l7json, sampling_rate: sampling_rate as i32, packet_size: header.original_packet_length as i32, timestamp: in_ms }
     }
 }
