@@ -14,22 +14,13 @@ use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream, UdpSocket};
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::mpsc;
-use clap::{Arg, App, SubCommand};
+use clap::{Arg, App};
 
 mod model {
     pub mod l3;
     pub mod l4;
     pub mod l7;
     pub mod mega_packet;
-}
-
-fn print_flow_record(record: &sflow::FlowRecord) {
-    use sflow::FlowRecord::*;
-    match record {
-        SampledHeader(sample) => println!("Sample: {:?}", sample),
-        SampledIpv4(sample) => println!("Sample: {:?}", sample),
-        _ => ()
-    }
 }
 
 fn get_sampled_header(record: &sflow::FlowRecord) -> Option<&SampledHeader> {
@@ -96,7 +87,7 @@ fn read_incoming_packets(channel: Sender<String>, addr: &str) {
                     .map(|x| serde_json::to_string(&x))
                     .for_each(|s| {
                         let json: String = s.unwrap();
-                        println!("{}", &json.clone());
+                        println!("{:?}", &json.clone());
                         channel.send(json); // todo - should return Result
                     }),
                 _ => ()
