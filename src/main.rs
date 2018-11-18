@@ -3,6 +3,8 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 extern crate sflow;
+#[macro_use]
+extern crate clap;
 
 use model::mega_packet::PacketJson;
 use sflow::Decodeable;
@@ -12,6 +14,7 @@ use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream, UdpSocket};
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::mpsc;
+use clap::{Arg, App, SubCommand};
 
 mod model {
     pub mod l3;
@@ -104,13 +107,37 @@ fn read_incoming_packets(channel: Sender<String>, addr: &str) {
 
 
 fn main() {
+    let matches = App::new("Sflow Collector")
+        .version("0.1")
+        //todo - wording
+        .about("Receives sflow UDP packets, parses sampledHeaderBytes to human-readable data, and creates server that is going to pass that data in json.")
+        .arg(Arg::with_name("Sflow Port")
+            .required(true)
+            .short("p")
+            .long("sflow-port")
+            .help("Port from which to read sflow packets.")
+            .takes_value(true)
+        )
+        .arg(Arg::with_name("Server port")
+            .short("l")
+            .long("server-listen-port")
+            .help("Port for tcp server serving parsed sflows as json")
+            .default_value("9999")
+            .takes_value(true)
+        )
+        .get_matches();
+
+    //Todo - handle gracefully
+    let sflow_port: u32 = value_t!(matches,"Sflow Port",u32).unwrap();
+    let server_port: u32 = value_t!(matches,"Server port",u32).unwrap();
+
     //todo - add commandline args
-    let incoming_udp_socket = "0.0.0.0:6343";
-    let outgoing_tcp_socket = "0.0.0.0:9999";
+    let incoming_udp_socket = format!("0.0.0.0:{}", sflow_port);
+    let outgoing_tcp_socket = format!("0.0.0.0:{}", server_port);
 
     let (sender, receiver): (Sender<String>, Receiver<String>) = mpsc::channel();
 
-    std::thread::spawn(move || read_incoming_packets(sender, incoming_udp_socket));
+    std::thread::spawn(move || read_incoming_packets(sender, incoming_udp_socket.as_str()));
     println!("Now sending");
-    start_forwarding_server(receiver, outgoing_tcp_socket);
+    start_forwarding_server(receiver, outgoing_tcp_socket.as_str());
 }
