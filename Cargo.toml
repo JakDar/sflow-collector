@@ -1,7 +1,7 @@
 [package]
 name = "sflow-collector"
 version = "0.1.0"
-authors = ["Andreas Rammhold <andreas@rammhold.de>"]
+authors = ["Andreas Rammhold <andreas@rammhold.de>", "Jakub Darul"]
 
 [dependencies]
 #sflow = {path="../rust-sflow"}

@@ -51,12 +51,12 @@ impl L4Json {
                 fin: Some(tcp.fin),
                 window_size: Some(tcp.window_size),
             },
-            Layer4Packet::UDP() => L4Json {
-                l4_type: L4JsonType::Udp, //todo - add udp
+            Layer4Packet::UDP(udp) => L4Json {
+                l4_type: L4JsonType::Udp,
                 icmp_type: None,
                 icmp_code: None,
-                src_port: None,
-                dst_port: None,
+                src_port: Some(udp.src_port),
+                dst_port: Some(udp.dst_port),
                 ack: None,
                 syn: None,
                 rst: None,

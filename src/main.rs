@@ -6,15 +6,15 @@ extern crate sflow;
 #[macro_use]
 extern crate clap;
 
+use clap::{App, Arg};
 use model::mega_packet::PacketJson;
-use sflow::Decodeable;
 use sflow::flow_records::SampledHeader;
-use std::io::Cursor;
+use sflow::Decodeable;
 use std::io::prelude::*;
+use std::io::Cursor;
 use std::net::{TcpListener, TcpStream, UdpSocket};
-use std::sync::mpsc::{Receiver, Sender};
 use std::sync::mpsc;
-use clap::{Arg, App};
+use std::sync::mpsc::{Receiver, Sender};
 
 mod model {
     pub mod l3;
@@ -27,7 +27,7 @@ fn get_sampled_header(record: &sflow::FlowRecord) -> Option<&SampledHeader> {
     use sflow::FlowRecord::*;
     match record {
         SampledHeader(sample) => Some(sample),
-        _ => None
+        _ => None,
     }
 }
 
@@ -42,7 +42,10 @@ fn start_forwarding_server(receiver: Receiver<String>, server_socket: &str) {
         let mut client: TcpStream = stream.unwrap();
         loop {
             let message = receiver.recv().unwrap() + "\n";
-            if let Err(e) = client.write(message.as_bytes()).and_then(|_| client.flush()) {
+            if let Err(e) = client
+                .write(message.as_bytes())
+                .and_then(|_| client.flush())
+            {
                 println!("Error while writing to a socket: {}\n", e);
                 break;
             }
@@ -61,7 +64,7 @@ fn read_incoming_packets(channel: Sender<String>, addr: &str) {
                 println!("Failed to read from socket: {:?}", e);
                 continue;
             }
-            Ok(some) => some
+            Ok(some) => some,
         };
 
         if size > 1500 {
@@ -75,27 +78,29 @@ fn read_incoming_packets(channel: Sender<String>, addr: &str) {
                 println!("failed to decode sample: {:?}", e);
                 continue;
             }
-            Ok(some) => some
+            Ok(some) => some,
         };
 
         for sample in &dgram.sample_record {
             match sample {
-                sflow::SampleRecord::FlowSample(flow) => flow.flow_records.iter()
+                sflow::SampleRecord::FlowSample(flow) => flow
+                    .flow_records
+                    .iter()
                     .map(|record| get_sampled_header(record))
                     .filter(|header| header.is_some())
-                    .map(|header| PacketJson::from_sampled_header(header.unwrap(), flow.sampling_rate))
-                    .map(|x| serde_json::to_string(&x))
+                    .map(|header| {
+                        PacketJson::from_sampled_header(header.unwrap(), flow.sampling_rate)
+                    }).map(|x| serde_json::to_string(&x))
                     .for_each(|s| {
                         let json: String = s.unwrap();
                         println!("{:?}", &json.clone());
                         channel.send(json); // todo - should return Result
                     }),
-                _ => ()
+                _ => (),
             }
         }
     }
 }
-
 
 fn main() {
     let matches = App::new("Sflow Collector")
@@ -119,8 +124,8 @@ fn main() {
         .get_matches();
 
     //Todo - handle gracefully
-    let sflow_port: u32 = value_t!(matches,"Sflow Port",u32).unwrap();
-    let server_port: u32 = value_t!(matches,"Server port",u32).unwrap();
+    let sflow_port: u32 = value_t!(matches, "Sflow Port", u32).unwrap();
+    let server_port: u32 = value_t!(matches, "Server port", u32).unwrap();
 
     //todo - add commandline args
     let incoming_udp_socket = format!("0.0.0.0:{}", sflow_port);
