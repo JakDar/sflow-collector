@@ -94,7 +94,7 @@ fn read_incoming_packets(channel: Sender<String>, addr: &str) {
                     .for_each(|s| {
                         let json: String = s.unwrap();
                         println!("{:?}", &json.clone());
-                        channel.send(json); // todo - should return Result
+                        channel.send(json);
                     }),
                 _ => (),
             }
@@ -105,7 +105,6 @@ fn read_incoming_packets(channel: Sender<String>, addr: &str) {
 fn main() {
     let matches = App::new("Sflow Collector")
         .version("0.1")
-        //todo - wording
         .about("Receives sflow UDP packets, parses sampledHeaderBytes to human-readable data, and creates server that is going to pass that data in json.")
         .arg(Arg::with_name("Sflow Port")
             .required(true)
@@ -123,11 +122,9 @@ fn main() {
         )
         .get_matches();
 
-    //Todo - handle gracefully
     let sflow_port: u32 = value_t!(matches, "Sflow Port", u32).unwrap();
     let server_port: u32 = value_t!(matches, "Server port", u32).unwrap();
 
-    //todo - add commandline args
     let incoming_udp_socket = format!("0.0.0.0:{}", sflow_port);
     let outgoing_tcp_socket = format!("0.0.0.0:{}", server_port);
 
